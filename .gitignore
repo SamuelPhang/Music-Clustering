@@ -2,3 +2,6 @@ audioset_v1_embeddings
 features.tar.gz
 assets
 model
+audioset.index
+audioset.lmdb
+*.pyc
