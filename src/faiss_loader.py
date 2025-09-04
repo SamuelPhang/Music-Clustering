@@ -12,18 +12,19 @@ from tf_parser import parse_tfrecords_to_embeddings
 AUDIOSET_INDEX_FILE = "audioset.index"
 AUDIOSET_LMDB_FILE = "audioset.lmdb"
 
+
 class FaissLoader():
     def __init__(self, dataset=None):
         # if the index file exists:
         if os.path.exists(AUDIOSET_INDEX_FILE) and os.path.exists(AUDIOSET_LMDB_FILE):
             print(f"Loading FAISS index from {AUDIOSET_INDEX_FILE}")
-            self.index = faiss.read_index(AUDIOSET_INDEX_FILE) 
+            self.index = faiss.read_index(AUDIOSET_INDEX_FILE)
         else:
             if dataset is not None:
                 self.index = self._init_index(dataset)
             else:
-                raise Exception("Dataset is None." 
-                    "You pass a valid dataset if the FAISS index is not stored in disk")
+                raise Exception("Dataset is None."
+                                "You pass a valid dataset if the FAISS index is not stored in disk")
 
         print(f"Loading LMDB from {AUDIOSET_LMDB_FILE}")
         self.lmdb = lmdb.open(AUDIOSET_LMDB_FILE, readonly=True, lock=False)
@@ -36,7 +37,8 @@ class FaissLoader():
         next_id = 0
         buffer_size = 2000  # adjust depending on RAM
 
-        env = lmdb.open(AUDIOSET_LMDB_FILE, map_size=3 * (1024**3)) # 3GB map size
+        env = lmdb.open(AUDIOSET_LMDB_FILE, map_size=3 *
+                        (1024**3))  # 3GB map size
 
         with env.begin(write=True) as txn:
             for embeddings, context in dataset:
@@ -48,7 +50,8 @@ class FaissLoader():
                 end_sec = context["end_time_seconds"].numpy()
                 labels = tf.sparse.to_dense(context["labels"]).numpy().tolist()
 
-                times = np.linspace(start_sec, end_sec, num=num_steps, endpoint=False)
+                times = np.linspace(start_sec, end_sec,
+                                    num=num_steps, endpoint=False)
 
                 emb_buffer.append(arr)
 
@@ -87,19 +90,21 @@ class FaissLoader():
                 if raw:
                     meta = json.loads(raw.decode())
                     print(f"Rank {rank}: video={meta['video_id']}, "
-                            f"time={meta['timestamp']:.1f}s, "
-                            f"dist={distance:.4f}, labels={meta['labels']}")
+                          f"time={meta['timestamp']:.1f}s, "
+                          f"dist={distance:.4f}, labels={meta['labels']}")
+
 
 def main():
     print("Parsing TFRecords to embeddings")
-    embedding_dataset = parse_tfrecords_to_embeddings('audioset_v1_embeddings/bal_train/__.tfrecord', True)
+    embedding_dataset = parse_tfrecords_to_embeddings(
+        'audioset_v1_embeddings/bal_train/__.tfrecord', True)
 
     model = VGGishEmbeddingsModel()
     embeddings = model.get_embeddings('assets/YouDoSomethingToMe2.mp3', True)
     tf.keras.backend.clear_session()
 
     faiss_loader = FaissLoader(embedding_dataset)
-    faiss_loader.get_k_nearest_neighbors(embeddings, k=20)
+    faiss_loader.get_k_nearest_neighbors(embeddings, k=3)
 
 
 if __name__ == "__main__":

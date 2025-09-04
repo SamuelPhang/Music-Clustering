@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 
+
 def parse_tfrecords_to_embeddings(tfrecord_files, dequantized=True):
     """
     Parses TFRecord files to extract audio embeddings.
@@ -32,7 +33,8 @@ def parse_tfrecords_to_embeddings(tfrecord_files, dequantized=True):
     def _parse_function(example_proto):
         # Parse the input `example_proto` using the dictionary above.
         # return tf.io.parse_single_example(example_proto, feature_description)
-        context, sequence = tf.io.parse_single_sequence_example(example_proto, feature_description, sequence_features)
+        context, sequence = tf.io.parse_single_sequence_example(
+            example_proto, feature_description, sequence_features)
         embeddings = tf.map_fn(
             lambda x: tf.io.decode_raw(x, tf.uint8),
             sequence["audio_embedding"],
@@ -66,6 +68,7 @@ def parse_tfrecords_to_embeddings(tfrecord_files, dequantized=True):
 
     # return embeddings_list
 
+
 def main():
     # --- Example Usage ---
     # Assume you have a TFRecord file named 'audioset_vggish.tfrecord'
@@ -81,27 +84,24 @@ def main():
     #         }))
     #         writer.write(example.SerializeToString())
 
-
     # Now, parse the file you created or downloaded
-    my_embeddings = parse_tfrecords_to_embeddings('audioset_v1_embeddings/bal_train/__.tfrecord', True)
+    my_embeddings = parse_tfrecords_to_embeddings(
+        'audioset_v1_embeddings/bal_train/__.tfrecord', True)
 
     count = 0
     for embeddings, context in my_embeddings:
         video_id = context["video_id"].numpy().decode("utf-8")
         print(f"\nVideo ID: {video_id}")
         print("Embeddings shape:", embeddings.shape)
-        
+
         # Print first few embedding vectors (per-second)
         for i, vec in enumerate(embeddings.numpy()[:5]):  # first 5 timesteps
             print(f"Step {i} embedding (first 10 dims):", vec[:10])
-        
+
         count += 1
         if count >= 1:  # stop after first example
             break
-        
-
 
 
 if __name__ == "__main__":
     main()
-    

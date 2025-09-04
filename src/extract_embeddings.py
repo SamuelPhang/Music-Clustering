@@ -11,24 +11,29 @@ AUDIO_FILENAME_2 = 'assets/AfterGlow.mp3'
 
 class EmbeddingsModel:
     def get_embeddings(self, audio_filename: str, normalize=False) -> np.ndarray:
-        audio = MonoLoader(filename=audio_filename, sampleRate=16000, resampleQuality=4)()
+        audio = MonoLoader(filename=audio_filename,
+                           sampleRate=16000, resampleQuality=4)()
         embeddings = self.model(audio)
-        
+
         # Example normalization
         if normalize:
-            embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+            embeddings = embeddings / \
+                np.linalg.norm(embeddings, axis=1, keepdims=True)
 
         return embeddings
 
+
 class VGGishEmbeddingsModel(EmbeddingsModel):
     def __init__(self):
-        self.model = TensorflowPredictVGGish(graphFilename='model/audioset-vggish-3.pb', output="model/vggish/embeddings")
+        self.model = TensorflowPredictVGGish(
+            graphFilename='model/audioset-vggish-3.pb', output="model/vggish/embeddings")
 
 
 class DiscogsEmbeddingsModel(EmbeddingsModel):
     def __init__(self):
         # super().__init__(graph_filename='model/discogs-effnet-bs64-1.pb')
         pass
+
 
 def main():
     vgg_model = VGGishEmbeddingsModel()
@@ -41,6 +46,7 @@ def main():
     print(embeddings2)
     # get the cosine similarity
     print(1 - cosine(embeddings1, embeddings2))
+
 
 if __name__ == "__main__":
     main()
