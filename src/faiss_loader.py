@@ -1,11 +1,9 @@
 import pickle
-import random
-from extract_embeddings import VGGishEmbeddingsModel
+# from extract_embeddings import VGGishEmbeddingsModel  # uncomment for testing
 import tensorflow as tf
 import numpy as np
 import faiss
 import lmdb
-import json
 import os
 
 from tf_parser import parse_tfrecords_to_embeddings
@@ -173,14 +171,15 @@ def main():
 
     print("Getting embeddings for the query audio")
     model = VGGishEmbeddingsModel()
-    embeddings = model.get_embeddings('assets/YouDoSomethingToMe2.mp3', True)
+    embeddings = model.get_embeddings('assets/AfterGlow.mp3', True)
     tf.keras.backend.clear_session()
 
     print("Loading FAISS index")
     faiss_loader = FaissLoader(embedding_dataset)
     print("Getting k nearest neighbors")
-    faiss_loader.get_k_nearest_neighbors(embeddings, k=3)
+    faiss_loader.get_k_nearest_neighbors(embeddings, k=5)
 
 
 if __name__ == "__main__":
-    main()
+    # main()   # uncomment for testing
+    pass
